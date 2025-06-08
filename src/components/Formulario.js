@@ -384,7 +384,32 @@ const Formulario = () => {
         mimeType:
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
-      saveAs(blob, "informe.docx");
+
+// Al final de la función generarWord, justo antes del catch:
+
+      const fecha = new Date().toISOString().split('T')[0];
+      const nombreCliente = formData.facilitadoA?.replace(/\s+/g, '');
+      const customFileName = `${fecha}_INFORME DE ENSAYOS NO DESTRUCTIVOS_${nombreCliente}.docx`;
+      saveAs(blob, customFileName);
+
+      // ENVIAR AL BACKEND PARA GOOGLE DRIVE
+      const formToSend = new FormData();
+      formToSend.append('file', blob, customFileName);
+      formToSend.append('customFileName', customFileName);
+
+      fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formToSend,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log('✔ Archivo subido a Google Drive. ID:', data.fileId);
+        })
+        .catch((err) => {
+          console.error('❌ Error al subir a Drive:', err);
+        });
+
+      //fin del gpteada
     } catch (error) {
       console.error("Error generando el documento:", error);
     }
@@ -1042,6 +1067,11 @@ const [cantidadImagenes, setCantidadImagenes] = useState(1); // Comienza con 1 i
   };
   
 
+
+
+
+
+  
   const renderStep = () => {
     switch (step) {
       case 0:
