@@ -392,24 +392,41 @@ const Formulario = () => {
       const customFileName = `${fecha}_INFORME DE ENSAYOS NO DESTRUCTIVOS_${nombreCliente}.docx`;
       saveAs(blob, customFileName);
 
-      // ENVIAR AL BACKEND PARA GOOGLE DRIVE
-      const formToSend = new FormData();
-      formToSend.append('file', blob, customFileName);
-      formToSend.append('customFileName', customFileName);
+// ENVIAR AL BACKEND PARA GOOGLE DRIVE
+const formToSend = new FormData();
+formToSend.append('file', blob, customFileName);
+formToSend.append('customFileName', customFileName);
 
-      fetch('https://aeroend-backend.onrender.com/upload', {
-        method: 'POST',
-        body: formToSend,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log('✔ Archivo subido a Google Drive. ID:', data.fileId);
-        })
-        .catch((err) => {
-          console.error('❌ Error al subir a Drive:', err);
-        });
+fetch('https://aeroend-backend.onrender.com/upload', {
+  method: 'POST',
+  body: formToSend,
+})
+  .then(async (res) => {
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText}`);
+    }
+    return res.json();
+  })
+  .then((data) => {
+    console.log('✔ Archivo subido a Google Drive. ID:', data.fileId);
+  })
+  .catch((err) => {
+    console.error('❌ Error al subir a Drive:', err);
 
-      //fin del gpteada
+    const errorDiv = document.createElement('div');
+    errorDiv.innerText = `❌ Error al subir: ${err.message || err}`;
+    errorDiv.style.color = 'white';
+    errorDiv.style.backgroundColor = 'red';
+    errorDiv.style.padding = '10px';
+    errorDiv.style.marginTop = '10px';
+    errorDiv.style.fontWeight = 'bold';
+    document.body.appendChild(errorDiv);
+  });
+
+
+//fin del gpteada
+
     } catch (error) {
       console.error("Error generando el documento:", error);
     }
