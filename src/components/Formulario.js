@@ -156,6 +156,8 @@ const Formulario = () => {
   imagendeltrabajo19: "--",
   imagendeltrabajo20: "--",
   });
+
+  
   const handleChange = (e, materialKey = null) => {
     const { name, type, value, checked } = e.target;
 
@@ -195,7 +197,9 @@ const Formulario = () => {
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
+  
 
+  //funcion que toma todos los valores y exporta el doc 1 
   const generarWord = async () => {
     const plantillaURL = `${process.env.PUBLIC_URL}/templates/plantilla.docx`;
     console.log("estoy por imprimir ", formData.resultadosImagen);
@@ -396,41 +400,263 @@ const Formulario = () => {
 const formToSend = new FormData();
 formToSend.append('file', blob, customFileName);
 formToSend.append('customFileName', customFileName);
+formToSend.append('folderId', '1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-');
 
-fetch('https://aeroend-backend.onrender.com/upload', {
-  method: 'POST',
-  body: formToSend,
-})
-  .then(async (res) => {
+  // 🔧 LOCAL
+     /*   const res = await fetch("http://localhost:5000/upload", {
+      method: "POST",
+      body: formToSend,
+    });*/
+
+    // ☁️ PRODUCCIÓN (Render)
+
+    const res = await fetch("https://aeroend-backend.onrender.com/upload", {
+      method: "POST",
+      body: formToSend,
+    });
+   
+
     if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`HTTP ${res.status}: ${errText}`);
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
     }
-    return res.json();
-  })
-  .then((data) => {
-    console.log('✔ Archivo subido a Google Drive. ID:', data.fileId);
-  })
-  .catch((err) => {
-    console.error('❌ Error al subir a Drive:', err);
 
-    const errorDiv = document.createElement('div');
-    errorDiv.innerText = `❌ Error al subir: ${err.message || err}`;
-    errorDiv.style.color = 'white';
-    errorDiv.style.backgroundColor = 'red';
-    errorDiv.style.padding = '10px';
-    errorDiv.style.marginTop = '10px';
-    errorDiv.style.fontWeight = 'bold';
-    document.body.appendChild(errorDiv);
-  });
-
-
-//fin del gpteada
-
-    } catch (error) {
-      console.error("Error generando el documento:", error);
-    }
+    const data = await res.json();
+    console.log("✔ Archivo subido a Google Drive. ID:", data.fileId);
+  } catch (err) {
+    console.error("❌ Error generando/subiendo doc 2:", err);
+  }
   };
+
+
+// funcion que exporta documento 2 y guarda todos los valores como el 1
+const generarWord2 = async () => {
+  const plantillaURL = `${process.env.PUBLIC_URL}/templates/plantilla2.docx`;
+
+  try {
+    const response = await fetch(plantillaURL);
+    if (!response.ok) throw new Error("No se pudo cargar la plantilla");
+    const content = await response.arrayBuffer();
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+      modules: [loadImageModule()],
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: "{{", end: "}}" },
+    });
+
+      // Renderizar los datos con renderAsync ESTE AWAIT DEBE ESTAR EN CADA BTN Q GUARDE UN DOC
+      await doc.renderAsync({
+        fecha: formatFecha(formData.fecha),
+        facilitadoA: formData.facilitadoA || "N/A",
+        direccion: formData.direccion || "N/A",
+        aeronaveMotor: formData.aeronaveMotor || "N/A",
+        matricula: formData.matricula || "N/A",
+        motorComponente: formData.motorComponente || "N/A",
+        parteNumero: formData.parteNumero || "N/A",
+        serieNumero: formData.serieNumero || "N/A",
+        tsnTso: formData.tsnTso || "N/A",
+        ordenDeTrabajo: formData.ordenDeTrabajo || "N/A",
+        informeNumero: formData.informeNumero || "N/A",
+        liquidosPenetrantes: formData.tipoEnsayo.liquidosPenetrantes ? "█" : "",
+        inspeccionVisual: formData.tipoEnsayo.inspeccionVisual ? "█" : "",
+        particulasMagneticas: formData.tipoEnsayo.particulasMagneticas
+          ? "█"
+          : "",
+        corrientesInducidas: formData.tipoEnsayo.corrientesInducidas ? "█" : "",
+        dureza: formData.tipoEnsayo.dureza ? "█" : "",
+        boroscopia: formData.tipoEnsayo.boroscopia ? "█" : "",
+        ultrasonidos: formData.tipoEnsayo.ultrasonidos ? "█" : "",
+        radiografia: formData.tipoEnsayo.radiografia ? "█" : "",
+        procedimientoAplicable: formData.procedimientoAplicable || "N/A",
+        metodo: formData.metodo || "N/A",
+        removedorTipo: formData.materiales.removedor.tipo || "N/A",
+        removedorLote: formData.materiales.removedor.lote || "N/A",
+        removedorNivel: formData.materiales.removedor.nivel || "N/A",
+        removedorVence: formData.materiales.removedor.vence || "N/A",
+        penetranteTipo: formData.materiales.penetrante.tipo || "N/A",
+        penetranteLote: formData.materiales.penetrante.lote || "N/A",
+        penetranteNivel: formData.materiales.penetrante.nivel || "N/A",
+        penetranteVence: formData.materiales.penetrante.vence || "N/A",
+        particulasTipo: formData.materiales.particulas.tipo || "N/A",
+        particulasLote: formData.materiales.particulas.lote || "N/A",
+        particulasNivel: formData.materiales.particulas.nivel || "N/A",
+        particulasVence: formData.materiales.particulas.vence || "N/A",
+        acoplanteTipo: formData.materiales.acoplante.tipo || "N/A",
+        acoplanteLote: formData.materiales.acoplante.lote || "N/A",
+        acoplanteNivel: formData.materiales.acoplante.nivel || "N/A",
+        acoplanteVence: formData.materiales.acoplante.vence || "N/A",
+        emulsificadorTipo: formData.materiales.emulsificador.tipo || "N/A",
+        emulsificadorLote: formData.materiales.emulsificador.lote || "N/A",
+        emulsificadorVence: formData.materiales.emulsificador.vence || "N/A",
+        reveladorTipo: formData.materiales.revelador.tipo || "N/A",
+        reveladorLote: formData.materiales.revelador.lote || "N/A",
+        reveladorVence: formData.materiales.revelador.vence || "N/A",
+        placasTipo: formData.materiales.placas.tipo || "N/A",
+        placasLote: formData.materiales.placas.lote || "N/A",
+        placasVence: formData.materiales.placas.vence || "N/A",
+        fijadorTipo: formData.materiales.fijador.tipo || "N/A",
+        fijadorLote: formData.materiales.fijador.lote || "N/A",
+        fijadorVence: formData.materiales.fijador.vence || "N/A",
+        luzUltravioletaMedidor: formData.luces.ultravioleta.medidor || "N/A",
+        luzUltravioletaModelo: formData.luces.ultravioleta.modelo || "N/A",
+        luzUltravioletaSerie: formData.luces.ultravioleta.serie || "N/A",
+        luzUltravioletaVencimiento:
+          formData.luces.ultravioleta.vencimiento || "N/A",
+        luzUltravioletaIntensidad:
+          formData.luces.ultravioleta.intensidad || "N/A",
+        ambientalMedidor: formData.luces.ambiental.medidor || "N/A",
+        ambientalModelo: formData.luces.ambiental.modelo || "N/A",
+        ambientalSerie: formData.luces.ambiental.serie || "N/A",
+        ambientalVencimiento: formData.luces.ambiental.vencimiento || "N/A",
+        ambientalIntensidad: formData.luces.ambiental.intensidad || "N/A",
+        blancaMedidor: formData.luces.blanca.medidor || "N/A",
+        blancaModelo: formData.luces.blanca.modelo || "N/A",
+        blancaSerie: formData.luces.blanca.serie || "N/A",
+        blancaVencimiento: formData.luces.blanca.vencimiento || "N/A",
+        blancaIntensidad: formData.luces.blanca.intensidad || "N/A",
+
+        // Equipamiento columna 1
+        columna1Equipo: formData.equipamiento.columna1.equipo || "N/A",
+        columna1Modelo: formData.equipamiento.columna1.modelo || "N/A",
+        columna1Serie: formData.equipamiento.columna1.serie || "N/A",
+        columna1Vencimiento:
+          formData.equipamiento.columna1.vencimiento || "N/A",
+        columna1Frecuencia: formData.equipamiento.columna1.frecuencia || "N/A",
+        columna1Ganancia: formData.equipamiento.columna1.ganancia || "N/A",
+
+        // Equipamiento columna 2
+        columna2Equipo: formData.equipamiento.columna2.equipo || "N/A",
+        columna2Modelo: formData.equipamiento.columna2.modelo || "N/A",
+        columna2Serie: formData.equipamiento.columna2.serie || "N/A",
+        columna2Vencimiento:
+          formData.equipamiento.columna2.vencimiento || "N/A",
+        columna2Frecuencia: formData.equipamiento.columna2.frecuencia || "N/A",
+        columna2Ganancia: formData.equipamiento.columna2.ganancia || "N/A",
+
+        // Equipamiento columna 3
+        columna3Equipo: formData.equipamiento.columna3.equipo || "N/A",
+        columna3Modelo: formData.equipamiento.columna3.modelo || "N/A",
+        columna3Serie: formData.equipamiento.columna3.serie || "N/A",
+        columna3Vencimiento:
+          formData.equipamiento.columna3.vencimiento || "N/A",
+        columna3Frecuencia: formData.equipamiento.columna3.frecuencia || "N/A",
+        columna3Ganancia: formData.equipamiento.columna3.ganancia || "N/A",
+
+        // Equipamiento columna 4
+        columna4Equipo: formData.equipamiento.columna4.equipo || "N/A",
+        columna4Modelo: formData.equipamiento.columna4.modelo || "N/A",
+        columna4Serie: formData.equipamiento.columna4.serie || "N/A",
+        columna4Vencimiento:
+          formData.equipamiento.columna4.vencimiento || "N/A",
+        columna4Frecuencia: formData.equipamiento.columna4.frecuencia || "N/A",
+        columna4Ganancia: formData.equipamiento.columna4.ganancia || "N/A",
+
+        // Equipamiento columna 5
+        columna5Equipo: formData.equipamiento.columna5.equipo || "N/A",
+        columna5Modelo: formData.equipamiento.columna5.modelo || "N/A",
+        columna5Serie: formData.equipamiento.columna5.serie || "N/A",
+        columna5Vencimiento:
+          formData.equipamiento.columna5.vencimiento || "N/A",
+        columna5Frecuencia: formData.equipamiento.columna5.frecuencia || "N/A",
+        columna5Ganancia: formData.equipamiento.columna5.ganancia || "N/A",
+
+        // Equipamiento columna 6
+        columna6Equipo: formData.equipamiento.columna6.equipo || "N/A",
+        columna6Modelo: formData.equipamiento.columna6.modelo || "N/A",
+        columna6Serie: formData.equipamiento.columna6.serie || "N/A",
+        columna6Vencimiento:
+          formData.equipamiento.columna6.vencimiento || "N/A",
+        columna6Frecuencia: formData.equipamiento.columna6.frecuencia || "N/A",
+        columna6Ganancia: formData.equipamiento.columna6.ganancia || "N/A",
+
+        // Equipamiento columna 7
+        columna7Equipo: formData.equipamiento.columna7.equipo || "N/A",
+        columna7Modelo: formData.equipamiento.columna7.modelo || "N/A",
+        columna7Serie: formData.equipamiento.columna7.serie || "N/A",
+        columna7Vencimiento:
+          formData.equipamiento.columna7.vencimiento || "N/A",
+        columna7Frecuencia: formData.equipamiento.columna7.frecuencia || "N/A",
+        columna7Ganancia: formData.equipamiento.columna7.ganancia || "N/A",
+
+        // PASO 23
+        txtRdoEnsayo: formData.txtRdoEnsayo || "N/A",
+        // TABLAS EN FORMATO IMG
+        resultadosImagen1: formData.resultadosImagen1 || "",
+        resultadosImagen2: formData.resultadosImagen2 || "",
+
+        //IMAGENES DE SEGUNDA PAGINA
+        img1: formData.imagendeltrabajo1 || "",
+  img2: formData.imagendeltrabajo2 || "",
+  img3: formData.imagendeltrabajo3 || "",
+  img4: formData.imagendeltrabajo4 || "",
+  img5: formData.imagendeltrabajo5 || "",
+  img6: formData.imagendeltrabajo6 || "",
+  img7: formData.imagendeltrabajo7 || "",
+  img8: formData.imagendeltrabajo8 || "",
+  img9: formData.imagendeltrabajo9 || "",
+  img10: formData.imagendeltrabajo10 || "",
+  img11: formData.imagendeltrabajo11 || "",
+  img12: formData.imagendeltrabajo12 || "",
+  img13: formData.imagendeltrabajo13 || "",
+  img14: formData.imagendeltrabajo14 || "",
+  img15: formData.imagendeltrabajo15 || "",
+  img16: formData.imagendeltrabajo16 || "",
+  img17: formData.imagendeltrabajo17 || "",
+  img18: formData.imagendeltrabajo18 || "",
+  img19: formData.imagendeltrabajo19 || "",
+  img20: formData.imagendeltrabajo20 || "",
+
+        operador: formData.operador?.nombre || "N/A",
+        firmaOperador: formData.operador?.firma,
+        inspector: formData.inspector?.nombre || "N/A",
+        firmaInspector: formData.inspector?.firma,
+      });
+
+    const blob = doc.getZip().generate({
+      type: "blob",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+
+    const fecha = new Date().toISOString().split("T")[0];
+    const nombreCliente = formData.facilitadoA?.replace(/\s+/g, "");
+    const customFileName = `${fecha}_ORDEN DE TRABAJO_${nombreCliente}.docx`;
+    saveAs(blob, customFileName);
+
+const archivo = new File([blob], customFileName, {
+  type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+});
+const formToSend = new FormData();
+formToSend.append("file", archivo); // <-- ahora sí es un File válido
+formToSend.append("customFileName", customFileName);
+formToSend.append('folderId', '1dYwqMk9IkPvRQOSXkeXw03Wvj4OYu-YQ'); // ✅ Carpeta de OrdenDeTrabajo
+
+
+
+    // 🔧 LOCAL
+    /*const res = await fetch("http://localhost:5000/upload", {
+      method: "POST",
+      body: formToSend,
+    });*/
+
+    // ☁️ PRODUCCIÓN (Render)
+    
+    const res = await fetch("https://aeroend-backend.onrender.com/upload", {
+      method: "POST",
+      body: formToSend,
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+
+    const data = await res.json();
+    console.log("✔ Archivo subido a Google Drive. ID:", data.fileId);
+  } catch (err) {
+    console.error("❌ Error generando/subiendo doc 2:", err);
+  }
+};
 
 
   const renderTextareas = () => {
@@ -1100,7 +1326,14 @@ const [cantidadImagenes, setCantidadImagenes] = useState(1); // Comienza con 1 i
                 className="btn btn-success w-100"
                 onClick={generarWord}
               >
-                Generar Word
+                Exportar doc 1
+              </button>
+                   <button
+                type="button"
+                className="btn btn-success w-100 mt-2"
+                onClick={generarWord2}
+              >
+                Exportar doc 2
               </button>
       {/* Selector de Operador */}
       <div className="mb-3">
