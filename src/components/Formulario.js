@@ -201,19 +201,21 @@ const Formulario = () => {
 
   //funcion que toma todos los valores y exporta el doc 1 
   const generarWord = async () => {
-    const plantillaURL = `${process.env.PUBLIC_URL}/templates/plantilla.docx`;
-    try {
-      const response = await fetch(plantillaURL);
-      if (!response.ok) throw new Error("No se pudo cargar la plantilla");
-      const content = await response.arrayBuffer();
-      const zip = new PizZip(content);
-      const doc = new Docxtemplater(zip, {
-        modules: [loadImageModule()],
-        paragraphLoop: true,
-        linebreaks: true,
-        delimiters: { start: "{{", end: "}}" },
-      });
+   const plantillaURL = `${process.env.PUBLIC_URL}/templates/plantilla.docx`;
+     try {
+       const response = await fetch(plantillaURL);
+       if (!response.ok) throw new Error("No se pudo cargar la plantilla");
+       const content = await response.arrayBuffer();
+       const zip = new PizZip(content);
+       const doc = new Docxtemplater(zip, {
+         modules: [loadImageModule()],
+         paragraphLoop: true,
+         linebreaks: true,
+         delimiters: { start: "{{", end: "}}" },
+       });
 
+       //intentamos darle valor a todas las variables
+      try {
       // Renderizar los datos con renderAsync
       await doc.renderAsync({
         fecha: formatFecha(formData.fecha),
@@ -351,84 +353,86 @@ const Formulario = () => {
         // PASO 23
         txtRdoEnsayo: formData.txtRdoEnsayo || "N/A",
         // TABLAS EN FORMATO IMG
-        resultadosImagen1: formData.resultadosImagen1 || "",
-        resultadosImagen2: formData.resultadosImagen2 || "",
+        resultadosImagen1: formData.resultadosImagen1 || "--",
+        resultadosImagen2: formData.resultadosImagen2 || "--",
 
         //IMAGENES DE SEGUNDA PAGINA
-        img1: formData.imagendeltrabajo1 || "",
-  img2: formData.imagendeltrabajo2 || "",
-  img3: formData.imagendeltrabajo3 || "",
-  img4: formData.imagendeltrabajo4 || "",
-  img5: formData.imagendeltrabajo5 || "",
-  img6: formData.imagendeltrabajo6 || "",
-  img7: formData.imagendeltrabajo7 || "",
-  img8: formData.imagendeltrabajo8 || "",
-  img9: formData.imagendeltrabajo9 || "",
-  img10: formData.imagendeltrabajo10 || "",
-  img11: formData.imagendeltrabajo11 || "",
-  img12: formData.imagendeltrabajo12 || "",
-  img13: formData.imagendeltrabajo13 || "",
-  img14: formData.imagendeltrabajo14 || "",
-  img15: formData.imagendeltrabajo15 || "",
-  img16: formData.imagendeltrabajo16 || "",
-  img17: formData.imagendeltrabajo17 || "",
-  img18: formData.imagendeltrabajo18 || "",
-  img19: formData.imagendeltrabajo19 || "",
-  img20: formData.imagendeltrabajo20 || "",
-
+        img1: formData.imagendeltrabajo1 || "--",
+  img2: formData.imagendeltrabajo2 || "--",
+  img3: formData.imagendeltrabajo3 || "--",
+  img4: formData.imagendeltrabajo4 || "--",
+  img5: formData.imagendeltrabajo5 || "--",
+  img6: formData.imagendeltrabajo6 || "--",
+  img7: formData.imagendeltrabajo7 || "--",
+  img8: formData.imagendeltrabajo8 || "--",
+  img9: formData.imagendeltrabajo9 || "--",
+  img10: formData.imagendeltrabajo10 || "--",
+  img11: formData.imagendeltrabajo11 || "--",
+  img12: formData.imagendeltrabajo12 || "--",
+  img13: formData.imagendeltrabajo13 || "--",
+  img14: formData.imagendeltrabajo14 || "--",
+  img15: formData.imagendeltrabajo15 || "--",
+  img16: formData.imagendeltrabajo16 || "--",
+  img17: formData.imagendeltrabajo17 || "--",
+  img18: formData.imagendeltrabajo18 || "--",
+  img19: formData.imagendeltrabajo19 || "--",
+  img20: formData.imagendeltrabajo20 || "--",
         operador: formData.operador?.nombre || "N/A",
-        firmaOperador: formData.operador?.firma,
+        firmaOperador: formData.operador?.firma|| "--",
         inspector: formData.inspector?.nombre || "N/A",
-        firmaInspector: formData.inspector?.firma,
+        firmaInspector: formData.inspector?.firma || "--",
       });
+} catch (renderError) {
+  console.error("⛔ Error durante renderAsync:", renderError);
+  return; // evitar que intente subir
+}
 
-      const blob = doc.getZip().generate({
+//se crea el documento word
+const blob = doc.getZip().generate({
         type: "blob",
         mimeType:
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
-
-// Al final de la función generarWord, justo antes del catch:
-
+//se le da valores al documento , nombre etc
       const fecha = new Date().toISOString().split('T')[0];
       const nombreCliente = formData.facilitadoA?.replace(/\s+/g, '');
       const customFileName = `${fecha}_INFORME DE ENSAYOS NO DESTRUCTIVOS_${nombreCliente}.docx`;
-      saveAs(blob, customFileName);
 
-// ENVIAR AL BACKEND PARA GOOGLE DRIVE
+//se envia el doc al backend para subir a Drive
 const archivo = new File([blob], customFileName, {
   type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 });
 
 const formToSend = new FormData();
-formToSend.append("file", archivo); // ✅ ahora sí es un File válido
+formToSend.append("file", archivo); 
 formToSend.append("customFileName", customFileName);
 formToSend.append("folderId", "1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-");
 
 
-  // 🔧 LOCAL
-     /*   const res = await fetch("http://localhost:5000/upload", {
+  // pruebas para servidor local 
+     /*  const res = await fetch("http://localhost:5000/upload", {
       method: "POST",
       body: formToSend,
     });*/
 
-    // ☁️ PRODUCCIÓN (Render)
+   //fetch para correrlo online 
 
-    const res = await fetch("https://aeroend-backendv2.onrender.com/upload", {
+ const res = await fetch("https://aeroend-backendv2.onrender.com/upload", {
       method: "POST",
       body: formToSend,
     });
-   
 
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`HTTP ${res.status}: ${text}`);
     }
-
     const data = await res.json();
     console.log("✔ Archivo subido a Google Drive. ID:", data.fileId);
+
+//si se subio con exito se descarga
+  saveAs(blob, customFileName);
   } catch (err) {
-    console.error("❌ Error generando/subiendo doc 1:", err);
+    console.error("❌ Error generando/subiendo doc 1:", err.message);
   }
   };
 
