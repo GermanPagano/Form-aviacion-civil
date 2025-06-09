@@ -397,10 +397,15 @@ const Formulario = () => {
       saveAs(blob, customFileName);
 
 // ENVIAR AL BACKEND PARA GOOGLE DRIVE
+const archivo = new File([blob], customFileName, {
+  type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+});
+
 const formToSend = new FormData();
-formToSend.append('file', blob, customFileName);
-formToSend.append('customFileName', customFileName);
-formToSend.append('folderId', '1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-');
+formToSend.append("file", archivo); // ✅ ahora sí es un File válido
+formToSend.append("customFileName", customFileName);
+formToSend.append("folderId", "1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-");
+
 
   // 🔧 LOCAL
      /*   const res = await fetch("http://localhost:5000/upload", {
@@ -424,7 +429,7 @@ formToSend.append('folderId', '1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-');
     const data = await res.json();
     console.log("✔ Archivo subido a Google Drive. ID:", data.fileId);
   } catch (err) {
-    console.error("❌ Error generando/subiendo doc 2:", err);
+    console.error("❌ Error generando/subiendo doc 1:", err);
   }
   };
 
