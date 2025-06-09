@@ -202,7 +202,6 @@ const Formulario = () => {
   //funcion que toma todos los valores y exporta el doc 1 
   const generarWord = async () => {
     const plantillaURL = `${process.env.PUBLIC_URL}/templates/plantilla.docx`;
-    console.log("estoy por imprimir ", formData.resultadosImagen);
     try {
       const response = await fetch(plantillaURL);
       if (!response.ok) throw new Error("No se pudo cargar la plantilla");
