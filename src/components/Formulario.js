@@ -6,7 +6,9 @@ import ImageModule from "docxtemplater-image-module-free";
 
 const Formulario = () => {
   const [step, setStep] = useState(0); // Control del paso actual
+const [uploadStatus, setUploadStatus] = useState(""); // estado para mostrar avances de la subida
 
+  //funcion para obtener hora local
   const obtenerFechaLocal = () => {
     const fecha = new Date();
     const dia = String(fecha.getDate()).padStart(2, "0");
@@ -14,6 +16,7 @@ const Formulario = () => {
     const año = fecha.getFullYear();
     return `${año}-${mes}-${dia}`;
   };
+  //informacion del form 
   const [formData, setFormData] = useState({
     operador: { nombre: "", matricula: "", firma: "" },
     inspector: { nombre: "", matricula: "", firma: "" },
@@ -408,10 +411,11 @@ const formToSend = new FormData();
 formToSend.append("file", archivo); 
 formToSend.append("customFileName", customFileName);
 formToSend.append("folderId", "1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-");
+setUploadStatus("subiendo");
 
 //si se subio con exito se descarga
   saveAs(blob, customFileName);
-  
+
   // pruebas para servidor local 
      /*  const res = await fetch("http://localhost:5000/upload", {
       method: "POST",
@@ -430,9 +434,11 @@ formToSend.append("folderId", "1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-");
       throw new Error(`HTTP ${res.status}: ${text}`);
     }
     const data = await res.json();
+    setUploadStatus("exito");
     console.log("✔ Archivo subido a Google Drive. ID:", data.fileId);
 
   } catch (err) {
+    setUploadStatus("error");
     console.error("❌ Error generando/subiendo doc 1:", err.message);
   }
   };
@@ -631,7 +637,7 @@ const generarWord2 = async () => {
     const fecha = new Date().toISOString().split("T")[0];
     const nombreCliente = formData.facilitadoA?.replace(/\s+/g, "");
     const customFileName = `${fecha}_ORDEN DE TRABAJO_${nombreCliente}.docx`;
-    saveAs(blob, customFileName);
+    
 
 const archivo = new File([blob], customFileName, {
   type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -641,7 +647,8 @@ formToSend.append("file", archivo); // <-- ahora sí es un File válido
 formToSend.append("customFileName", customFileName);
 formToSend.append('folderId', '1dYwqMk9IkPvRQOSXkeXw03Wvj4OYu-YQ'); // ✅ Carpeta de OrdenDeTrabajo
 
-
+setUploadStatus("subiendo");
+saveAs(blob, customFileName);
 
     // 🔧 LOCAL
     /*const res = await fetch("http://localhost:5000/upload", {
@@ -662,8 +669,10 @@ formToSend.append('folderId', '1dYwqMk9IkPvRQOSXkeXw03Wvj4OYu-YQ'); // ✅ Carpe
     }
 
     const data = await res.json();
+    setUploadStatus("exito");
     console.log("✔ Archivo subido a Google Drive. ID:", data.fileId);
   } catch (err) {
+    setUploadStatus("error");
     console.error("❌ Error generando/subiendo doc 2:", err);
   }
 };
@@ -1319,12 +1328,6 @@ const [cantidadImagenes, setCantidadImagenes] = useState(1); // Comienza con 1 i
     );
   };
   
-
-
-
-
-
-  
   const renderStep = () => {
     switch (step) {
       case 0:
@@ -1336,14 +1339,14 @@ const [cantidadImagenes, setCantidadImagenes] = useState(1); // Comienza con 1 i
                 className="btn btn-success w-100"
                 onClick={generarWord}
               >
-                Exportar doc 1
+                Generar Formulario de Ensayos (Vacío)
               </button>
-                   <button
+              <button
                 type="button"
                 className="btn btn-success w-100 mt-2"
                 onClick={generarWord2}
               >
-                Exportar doc 2
+                Generar Orden de trabajo (Vacío)
               </button>
       {/* Selector de Operador */}
       <div className="mb-3">
@@ -1378,7 +1381,38 @@ const [cantidadImagenes, setCantidadImagenes] = useState(1); // Comienza con 1 i
       >
         Completar Formulario
       </button>
+            {uploadStatus === "subiendo" && (
+  <div style={{ marginTop: '20px' }}>
+    <p>Subiendo archivo...</p>
+    <div style={{ width: "100%", background: "#ddd", borderRadius: 4 }}>
+      <div
+        style={{
+          width: "100%",
+          height: 8,
+          background: "#4caf50",
+          animation: "progress 2s infinite",
+        }}
+      />
     </div>
+  </div>
+)}
+
+{uploadStatus === "exito" && (
+  <p style={{ marginTop: '20px',color: "green" }}>✔ Archivo subido con éxito</p>
+)}
+
+{uploadStatus === "error" && (
+  <p style={{ marginTop: '20px',color: "red" }}>❌ Ocurrió un error al subir el archivo</p>
+)}
+
+<style>
+  {`@keyframes progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }`}
+</style>
+    </div>
+    
   );
 
 
@@ -2063,8 +2097,45 @@ const [cantidadImagenes, setCantidadImagenes] = useState(1); // Comienza con 1 i
                 className="btn btn-success w-100"
                 onClick={generarWord}
               >
-                Generar Word
+                Generar Formulario de Ensayos
               </button>
+  <button
+                type="button"
+                className="btn btn-success w-100 mt-2"
+                onClick={generarWord2}
+              >
+                Generar Orden de trabajo
+              </button>
+              {uploadStatus === "subiendo" && (
+  <div style={{ marginTop: '20px' }}>
+    <p>Subiendo archivo...</p>
+    <div style={{ width: "100%", background: "#ddd", borderRadius: 4 }}>
+      <div
+        style={{
+          width: "100%",
+          height: 8,
+          background: "#4caf50",
+          animation: "progress 2s infinite",
+        }}
+      />
+    </div>
+  </div>
+)}
+
+{uploadStatus === "exito" && (
+  <p style={{ marginTop: '20px',color: "green" }}>✔ Archivo subido con éxito</p>
+)}
+
+{uploadStatus === "error" && (
+  <p style={{ marginTop: '20px',color: "red" }}>❌ Ocurrió un error al subir el archivo</p>
+)}
+
+<style>
+  {`@keyframes progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }`}
+</style>
             </div>
           );
 
