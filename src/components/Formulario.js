@@ -20,6 +20,7 @@ const Formulario = () => {
     fecha: obtenerFechaLocal(), // Fecha por defecto
     facilitadoA: "",
     direccion: "",
+    localodad:"",
     aeronaveMotor: "",
     matricula: "",
     motorComponente: "",
@@ -408,7 +409,9 @@ formToSend.append("file", archivo);
 formToSend.append("customFileName", customFileName);
 formToSend.append("folderId", "1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-");
 
-
+//si se subio con exito se descarga
+  saveAs(blob, customFileName);
+  
   // pruebas para servidor local 
      /*  const res = await fetch("http://localhost:5000/upload", {
       method: "POST",
@@ -429,8 +432,6 @@ formToSend.append("folderId", "1iOmJklYBQeQtYKOKqDXIsL6QdGGG2x0-");
     const data = await res.json();
     console.log("✔ Archivo subido a Google Drive. ID:", data.fileId);
 
-//si se subio con exito se descarga
-  saveAs(blob, customFileName);
   } catch (err) {
     console.error("❌ Error generando/subiendo doc 1:", err.message);
   }
@@ -458,6 +459,7 @@ const generarWord2 = async () => {
         fecha: formatFecha(formData.fecha),
         facilitadoA: formData.facilitadoA || "N/A",
         direccion: formData.direccion || "N/A",
+        localidad: formData.localidad || "N/A",
         aeronaveMotor: formData.aeronaveMotor || "N/A",
         matricula: formData.matricula || "N/A",
         motorComponente: formData.motorComponente || "N/A",
@@ -1410,10 +1412,19 @@ const [cantidadImagenes, setCantidadImagenes] = useState(1); // Comienza con 1 i
               <label className="form-label">Dirección</label>
               <input
                 type="text"
-                className="form-control"
+                className="form-control mb-3"
                 name="direccion"
                 placeholder="Dirección"
                 value={formData.direccion}
+                onChange={handleChange}
+              />
+              <label className="form-label">Localidad</label>
+              <input
+                type="text"
+                className="form-control"
+                name="localidad"
+                placeholder="Localidad"
+                value={formData.localidad}
                 onChange={handleChange}
               />
             </div>
